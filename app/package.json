@@ -1,0 +1,26 @@
+{
+  "name": "ft-score-getter",
+  "version": "0.0.1",
+  "description": "",
+  "private": false,
+  "main": "index.js",
+  "type": "module",
+  "types": "./dist/*.d.ts",
+  "scripts": {
+    "dev": "pnpm run build && pnpm run start",
+    "build": "tsc",
+    "start": "node ./dist/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "rm -rf dist && mkdir -p dist && tsc"
+  },
+  "keywords": [],
+  "author": "jaham",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^18.15.5",
+    "typescript": "^5.0.2"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.3"
+  }
+}

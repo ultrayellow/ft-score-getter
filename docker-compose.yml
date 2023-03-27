@@ -1,0 +1,24 @@
+version: '3'
+
+services:
+  score-getter:
+    container_name: score-getter
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    volumes:
+      - type: volume
+        source: score-getter-volume
+        target: /app
+    entrypoint: sh /tmp/entry.sh
+    env_file:
+      - .env
+
+volumes:
+  score-getter-volume:
+    name: score-getter-volume
+    driver: local
+    driver_opts:
+      device: ./app
+      type: none
+      o: bind
