@@ -2,7 +2,7 @@ import { RequestController } from './api-requester/RequestController.js';
 import { assertsFulfilled } from './asserts.js';
 import { Coalition } from './coalitionType.js';
 import { getPrevMonth } from './dateUtil.js';
-import { ScoreDto } from './ft-dto/ScoresDto.js';
+import { Score, ScoreDto, scoreSchema } from './ft-dto/ScoresDto.js';
 
 // todo: config here
 const DEFAULT_PAGE_JUMP_SIZE = 10;
@@ -12,7 +12,7 @@ export const requestScores = async (
   targetMonth: number,
   requestController: RequestController,
 ) => {
-  const scores: ScoreDto[] = [];
+  const scores: Score[] = [];
 
   let currPage = 1;
   while (needMoreFetch(scores, targetMonth)) {
@@ -21,7 +21,7 @@ export const requestScores = async (
 
     const currDatas = await getScoresResponsesData(requestController);
 
-    scores.push(...currDatas);
+    scores.push(...scoreSchema.array().parse(currDatas));
   }
 
   const targetMonthScores = scores.filter((score) =>
@@ -31,7 +31,7 @@ export const requestScores = async (
   return targetMonthScores;
 };
 
-const needMoreFetch = (scores: ScoreDto[], targetMonth: number) => {
+const needMoreFetch = (scores: Score[], targetMonth: number) => {
   if (scores.length === 0) {
     return true;
   }
@@ -75,7 +75,7 @@ const getScoresResponsesData = async (requestController: RequestController) => {
   return allPageDatas;
 };
 
-const isTargetMonthScores = (score: ScoreDto, targetMonth: number) => {
+const isTargetMonthScores = (score: Score, targetMonth: number) => {
   const scoreCreatedMonth = new Date(score.created_at).getMonth();
 
   return targetMonth === scoreCreatedMonth;

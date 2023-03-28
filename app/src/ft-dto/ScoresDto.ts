@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const Score = z.object({
+export const scoreSchema = z.object({
   id: z.string(),
   coalition_id: z.coerce.string(),
   scoreable_id: z.coerce.string(),
@@ -25,3 +25,6 @@ export type ScoreDto = {
   readonly created_at: string;
   readonly updated_at: string;
 };
+
+// todo: camel case
+export type Score = Readonly<z.infer<typeof scoreSchema>>

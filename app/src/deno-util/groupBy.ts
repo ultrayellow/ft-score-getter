@@ -12,3 +12,11 @@ export function groupBy<T, K extends string>(
 
   return ret;
 }
+
+export function assertGroupBySuccess<T, K extends string>(
+  grouped: Partial<Record<K, T[]>>
+): asserts grouped is Record<K, T[]> {
+  if (Object.keys(grouped).length === 0) {
+    throw new Error('groupBy failed.')
+  }
+}
