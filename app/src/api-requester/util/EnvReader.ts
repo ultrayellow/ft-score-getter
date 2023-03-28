@@ -6,8 +6,6 @@ import { Logger } from './Logger.js';
 export class EnvReader {
   private static readonly logger = new Logger('EnvReader');
 
-  private constructor() {}
-
   /**
    * @param envKey process env key.
    * @returns env value of key.

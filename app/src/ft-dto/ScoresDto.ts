@@ -1,3 +1,4 @@
+// todo: zod
 export type ScoreDto = {
   readonly id: number; // use z.coerce.string()
   readonly coalition_id: number;

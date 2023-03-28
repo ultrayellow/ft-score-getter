@@ -2,14 +2,24 @@ import * as fs from 'fs';
 import { ApiClientConfig } from './api-requester/client/ApiClientConfig.js';
 import { TokenStore } from './api-requester/client/TokenStore.js';
 import { RequestController } from './api-requester/RequestController.js';
-import { Coalition, GAM, GON, GUN, LEE } from './CoalitionType.js';
+import { Coalition, GAM, GON, GUN, LEE } from './coalitionType.js';
 import { getMonthFromInput } from './dateUtil.js';
-import { ScoreMapper, UserScoreRank } from './ScoreMapper.js';
-import { ScoreRequester } from './ScoreRequester.js';
+import { toScoresRanks } from './toScoreRanks.js';
+import { mapWithUser, UserScoreRank } from './mapWithUser.js';
+import { requestScores } from './requestScores.js';
+
+interface CoalitionsScoreRanks {
+  readonly gun: UserScoreRank[];
+  readonly gon: UserScoreRank[];
+  readonly gam: UserScoreRank[];
+  readonly lee: UserScoreRank[];
+}
 
 const main = async () => {
   const startDate = new Date();
-  console.log('\n==================\nstarting process...\n==================\n');
+  console.log(
+    '\n==================\nstarting process...\n==================\n',
+  );
 
   // todo: display prompt
   // const input = fs.readFileSync('/dev/stdin', { encoding: 'utf-8' });
@@ -19,26 +29,21 @@ const main = async () => {
   const requestController = new RequestController();
   await requestController.addTokenStore(new TokenStore(new ApiClientConfig()));
 
-  const responses = await requestController.awaitRequestPool();
-  console.log(responses);
-
   console.log(`Time Zone: ${process.env.TZ}`);
   console.log(`Target Month: ${targetMonth + 1}`);
 
-  const gunUserScoreRanks = await getCoalitionScoreRank(GUN, targetMonth, requestController);
-  const gonUserScoreRanks = await getCoalitionScoreRank(GON, targetMonth, requestController);
-  const gamUserScoreRanks = await getCoalitionScoreRank(GAM, targetMonth, requestController);
-  const leeUserScoreRanks = await getCoalitionScoreRank(LEE, targetMonth, requestController);
+  const coalitionsScoreRanks: CoalitionsScoreRanks = {
+    gun: await getCoalitionScoreRank(GUN, targetMonth, requestController),
+    gon: await getCoalitionScoreRank(GON, targetMonth, requestController),
+    gam: await getCoalitionScoreRank(GAM, targetMonth, requestController),
+    lee: await getCoalitionScoreRank(LEE, targetMonth, requestController),
+  } as const;
 
-  console.log(gunUserScoreRanks);
-  console.log(gonUserScoreRanks);
-  console.log(gamUserScoreRanks);
-  console.log(leeUserScoreRanks);
+  Object.entries(coalitionsScoreRanks).forEach(([coalitionName, scores]) => {
+    console.log(coalitionName, scores);
+  });
 
-  await writeResult(targetMonth, GUN, gunUserScoreRanks);
-  await writeResult(targetMonth, GON, gonUserScoreRanks);
-  await writeResult(targetMonth, GAM, gamUserScoreRanks);
-  await writeResult(targetMonth, LEE, leeUserScoreRanks);
+  await writeResult(targetMonth, coalitionsScoreRanks);
 
   console.log('\n==================\n...end of process\n==================\n');
   const endDate = new Date();
@@ -48,22 +53,27 @@ const main = async () => {
 const getCoalitionScoreRank = async (
   coalition: Coalition,
   targetMonth: number,
-  requestController: RequestController
+  requestController: RequestController,
 ) => {
-  const scores = await ScoreRequester.request(coalition, targetMonth, requestController);
+  const scores = await requestScores(coalition, targetMonth, requestController);
   const scoreRanks = toScoresRanks(scores);
-  const userScoreRanks = await ScoreMapper.mapWithUser(scoreRanks, requestController);
+  const userScoreRanks = await mapWithUser(scoreRanks, requestController);
 
   return userScoreRanks;
 };
 
-const writeResult = async (targetMonth: number, coalition: Coalition, scoreRanks: UserScoreRank[]) => {
+const writeResult = async (
+  targetMonth: number,
+  coalitionsScoreRanks: CoalitionsScoreRanks,
+) => {
   try {
-    await fs.promises.mkdir(`/var/log/score-getter/${targetMonth + 1}`, { recursive: true });
-    const outfile = await fs.promises.open(`/var/log/score-getter/${targetMonth + 1}/${coalition.name}.json`, 'w');
+    const outfile = await fs.promises.open(
+      `/var/log/score-getter/${targetMonth + 1}.json`,
+      'w',
+    );
 
     try {
-      await outfile.write(JSON.stringify(scoreRanks, null, '  '));
+      await outfile.write(JSON.stringify(coalitionsScoreRanks, null, '  '));
     } catch (e) {
       console.error('file write failed. use terminal output.');
     } finally {

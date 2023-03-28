@@ -41,13 +41,19 @@ export class RequestController {
       const currRequestPool = this.requestPool.splice(0, 10);
       const currResults = await this.sendRequests(currRequestPool);
 
-      await this.retryRejected(currRequestPool, currResults);
-
-      results.push(...currResults);
+      try {
+        await this.retryRejected(currRequestPool, currResults);
+        results.push(...currResults);
+      } catch (e) {
+        this.logger.error('retry limit exceeded');
+        break;
+      }
 
       if (this.hourlyLimitReached(currRequestPool, currResults)) {
         // todo: function..?
-        this.logger.log(`hourly limit reached. returning first ${results.length} requests`);
+        this.logger.error(
+          `hourly limit reached. returning first ${results.length} requests`,
+        );
         break;
       }
     }
@@ -55,7 +61,10 @@ export class RequestController {
     return results;
   };
 
-  retryRejected = async (requestPool: RequestArg[], results: PromiseSettledResult<Response>[]) => {
+  retryRejected = async (
+    requestPool: RequestArg[],
+    results: PromiseSettledResult<Response>[],
+  ) => {
     const retryIndexes = results.reduce((acc, curr, index) => {
       if (curr.status === 'rejected') {
         acc.push(index);
@@ -65,35 +74,35 @@ export class RequestController {
     }, Array<number>());
 
     const retryPromises = await this.sendRequests(
-      retryIndexes.map((curr) => {
-        return requestPool[curr];
-      })
+      retryIndexes.map((curr) => requestPool[curr]),
     );
 
     const retryResults = retryPromises;
 
-    retryIndexes.forEach((retryIndex, index) => {
-      results[retryIndex] = retryResults[index];
-    });
+    retryIndexes.forEach(
+      (retryIndex, index) => (results[retryIndex] = retryResults[index]),
+    );
   };
 
   private isDuplicatedTokenStore = (tokenStore: TokenStore) => {
     const currApiClientId = tokenStore.getApiClientId();
-    const findResult = this.tokenStores.find((curr) => curr.getApiClientId() === currApiClientId);
+    const findResult = this.tokenStores.find(
+      (curr) => curr.getApiClientId() === currApiClientId,
+    );
     return findResult !== undefined;
   };
 
   private initializeTokenStore = async (tokenStore: TokenStore) => {
     try {
       // todo: hmm...
-      const token = await tokenStore.getToken();
+      const _token = await tokenStore.getToken();
       return true;
     } catch {
       return false;
     }
   };
 
-  private selectToken = async (deps: number = 0): Promise<Token | null> => {
+  private selectToken = async (deps = 0): Promise<Token | null> => {
     // todo
     if (deps === 10 * 3) {
       return null;
@@ -121,13 +130,19 @@ export class RequestController {
     for (const currRequest of requestPool) {
       const token = await this.selectToken();
       if (!token) {
-        this.logger.error(`no api client available, proceed request before ${currRequest.url}`);
+        this.logger.error(
+          `no api client available, proceed request before ${currRequest.url}`,
+        );
         break;
       }
 
       token.rateLimiter.updateAtRequest();
 
-      const promise = this.fetcher.requestWithToken(currRequest, token.accessToken);
+      // todo: throws here
+      const promise = this.fetcher.requestWithToken(
+        currRequest,
+        token.accessToken,
+      );
 
       promisePool.push(promise);
 
@@ -139,7 +154,10 @@ export class RequestController {
   };
 
   // unknown[] type?
-  private hourlyLimitReached = (requestPool: RequestArg[], resultPool: PromiseSettledResult<Response>[]) => {
+  private hourlyLimitReached = (
+    requestPool: RequestArg[],
+    resultPool: PromiseSettledResult<Response>[],
+  ) => {
     return requestPool.length > resultPool.length;
   };
 }

@@ -88,7 +88,8 @@ export class TokenStore {
       throw Error(tokenResponse.statusText);
     }
 
-    const tokenResponsePayload: TokenResponsePayload = await tokenResponse.json();
+    const tokenResponsePayload: TokenResponsePayload =
+      await tokenResponse.json();
 
     // runtime type check for handling api reference change.
     if (isApiRefError(tokenResponsePayload)) {

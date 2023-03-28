@@ -8,8 +8,6 @@ export interface ReadAllFilesOption {
  * @description simple file r/w class
  */
 export class Files {
-  constructor() {}
-
   /**
    *
    * @param filepath file to read
@@ -30,7 +28,7 @@ export class Files {
    */
   static readAllFiles = async <ReturnType = unknown>(
     dirpath: string,
-    option?: ReadAllFilesOption
+    option?: ReadAllFilesOption,
   ) => {
     const dir = await fs.opendir(dirpath);
 
@@ -43,7 +41,7 @@ export class Files {
         if (dirent.isDirectory() && option?.recursive) {
           const recursiveResult = await this.readAllFiles<ReturnType>(
             dirpath + '/' + dirent.name,
-            option
+            option,
           );
 
           jsons.push(...recursiveResult);
@@ -88,7 +86,7 @@ export class Files {
     jsons: unknown[],
     dirpath: string,
     count: number,
-    prefix: string = 'file'
+    prefix = 'file',
   ) => {
     await fs.mkdir(dirpath, { recursive: true });
 
@@ -96,7 +94,7 @@ export class Files {
       await fs.writeFile(
         dirpath + '/' + prefix + `${i}` + '.json',
         JSON.stringify(jsons[i], null, '  '),
-        { encoding: 'utf-8' }
+        { encoding: 'utf-8' },
       );
     }
   };

@@ -13,8 +13,7 @@ services:
       - type: volume
         source: score-getter-output-volume
         target: /var/log/score-getter
-    entrypoint: tail -f
-    # entrypoint: sh /tmp/entry.sh
+    entrypoint: sh /tmp/entry.sh
     env_file:
       - .env
 

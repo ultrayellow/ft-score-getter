@@ -35,7 +35,8 @@ export class Fetcher {
   // todo: default value...
   private static readonly DEFAULT_SAVE_ERROR_LOG = true;
   private static readonly DEFAULT_ERROR_LOG_PATH = './error';
-  private static readonly DEFAULT_ERROR_STATUS_FN = (status: number) => status >= 400;
+  private static readonly DEFAULT_ERROR_STATUS_FN = (status: number) =>
+    status >= 400;
 
   error: unknown;
 
@@ -46,11 +47,21 @@ export class Fetcher {
   constructor(config?: Partial<FetcherConfig>) {
     this.config = {
       url: config?.url ? config.url : Fetcher.FT_INTRA_API_ENDPOINT,
-      retryCount: config?.retryCount ? config.retryCount : Fetcher.DEFAULT_RETRY_COUNT,
-      retryInterval: config?.retryInterval ? config.retryInterval : Fetcher.DEFAULT_RETRY_INTERVAL,
-      saveErrorLog: config?.saveErrorLog ? config.saveErrorLog : Fetcher.DEFAULT_SAVE_ERROR_LOG,
-      errorLogPath: config?.errorLogPath ? config.errorLogPath : Fetcher.DEFAULT_ERROR_LOG_PATH,
-      errorStatusFn: config?.errorStatusFn ? config.errorStatusFn : Fetcher.DEFAULT_ERROR_STATUS_FN,
+      retryCount: config?.retryCount
+        ? config.retryCount
+        : Fetcher.DEFAULT_RETRY_COUNT,
+      retryInterval: config?.retryInterval
+        ? config.retryInterval
+        : Fetcher.DEFAULT_RETRY_INTERVAL,
+      saveErrorLog: config?.saveErrorLog
+        ? config.saveErrorLog
+        : Fetcher.DEFAULT_SAVE_ERROR_LOG,
+      errorLogPath: config?.errorLogPath
+        ? config.errorLogPath
+        : Fetcher.DEFAULT_ERROR_LOG_PATH,
+      errorStatusFn: config?.errorStatusFn
+        ? config.errorStatusFn
+        : Fetcher.DEFAULT_ERROR_STATUS_FN,
     } as const;
   }
 
@@ -68,7 +79,9 @@ export class Fetcher {
 
         // retry logic
         if (!this.isRetryLimitReached(i)) {
-          this.logger.log(`going to retry after ${this.config.retryInterval}ms...`);
+          this.logger.log(
+            `going to retry after ${this.config.retryInterval}ms...`,
+          );
 
           await Util.sleepMs(this.config.retryInterval);
         }
@@ -76,12 +89,13 @@ export class Fetcher {
     }
 
     await this.logError(this.error, finalUrl, init);
+    console.log('here');
     return Promise.reject(this.error);
     // todo...
     // throw this.error;
   };
 
-  public requestWithToken = async (requestArg: RequestArg, accessToken: string) => {
+  public requestWithToken = (requestArg: RequestArg, accessToken: string) => {
     const { url, init } = requestArg;
 
     const newInit: RequestInit = {
@@ -92,7 +106,8 @@ export class Fetcher {
       },
     } as const;
 
-    return await this.request({ url: url, init: newInit });
+    const response = this.request({ url: url, init: newInit });
+    return response;
   };
 
   // request without retry
@@ -106,17 +121,26 @@ export class Fetcher {
     return response;
   };
 
-  private logError = async (error: unknown, url: string, init?: RequestInit) => {
+  private logError = async (
+    error: unknown,
+    url: string,
+    init?: RequestInit,
+  ) => {
     try {
       const currTime = new Date().getTime();
       await fs.mkdir(this.config.errorLogPath, { recursive: true });
-      const errorLogFile = await fs.open(`${this.config.errorLogPath}/fetch-err-${currTime}.log`, 'w');
+      const errorLogFile = await fs.open(
+        `${this.config.errorLogPath}/fetch-err-${currTime}.log`,
+        'w',
+      );
 
       try {
         await errorLogFile.write(`url: ${url}\n\n`);
 
         if (init) {
-          await errorLogFile.write(`init: ${JSON.stringify(init, null, '  ')}\n\n`);
+          await errorLogFile.write(
+            `init: ${JSON.stringify(init, null, '  ')}\n\n`,
+          );
 
           if (init.body) {
             await errorLogFile.write(`body: ${init.body.toString()}\n\n`);

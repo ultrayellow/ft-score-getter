@@ -1,10 +1,23 @@
-export function sortBy<T>(array: readonly T[], selector: (el: T) => number): T[];
-export function sortBy<T>(array: readonly T[], selector: (el: T) => string): T[];
-export function sortBy<T>(array: readonly T[], selector: (el: T) => bigint): T[];
+export function sortBy<T>(
+  array: readonly T[],
+  selector: (el: T) => number,
+): T[];
+export function sortBy<T>(
+  array: readonly T[],
+  selector: (el: T) => string,
+): T[];
+export function sortBy<T>(
+  array: readonly T[],
+  selector: (el: T) => bigint,
+): T[];
 export function sortBy<T>(array: readonly T[], selector: (el: T) => Date): T[];
 export function sortBy<T>(
   array: readonly T[],
-  selector: ((el: T) => number) | ((el: T) => string) | ((el: T) => bigint) | ((el: T) => Date)
+  selector:
+    | ((el: T) => number)
+    | ((el: T) => string)
+    | ((el: T) => bigint)
+    | ((el: T) => Date),
 ): T[] {
   const len = array.length;
   const indexes = new Array<number>(len);

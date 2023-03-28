@@ -1,5 +1,5 @@
-import { ApiClientConfig } from './ApiClientConfig.js';
 import { Util } from '../util/Util.js';
+import { ApiClientConfig } from './ApiClientConfig.js';
 
 export class RateLimiter {
   private readonly config: ApiClientConfig;
@@ -65,7 +65,7 @@ export class RateLimiter {
 
   private isNewSec = (currTime: number) => {
     // todo
-    return this.secondlyLimitResetAt + Util.SEC < currTime;
+    return this.secondlyLimitResetAt + Util.SEC / 2 < currTime;
   };
 
   private refreshSecondlyLimit = () => {

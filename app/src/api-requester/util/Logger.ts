@@ -22,13 +22,13 @@ export class Logger {
 
   log_start = () => {
     console.log(
-      '\n==================\nstarting process...\n==================\n'
+      '\n==================\nstarting process...\n==================\n',
     );
   };
 
   log_end = () => {
     console.log(
-      '\n==================\n...end of process\n==================\n'
+      '\n==================\n...end of process\n==================\n',
     );
   };
 }
