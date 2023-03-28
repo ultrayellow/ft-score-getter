@@ -1,0 +1,3 @@
+[submodule "env"]
+	path = env
+	url = git@github.com:ultrayellow/score-getter-env.git

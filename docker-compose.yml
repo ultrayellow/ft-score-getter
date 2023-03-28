@@ -1,4 +1,4 @@
-version: "3"
+version: '3'
 
 services:
   score-getter:
@@ -15,7 +15,7 @@ services:
         target: /var/log/score-getter
     entrypoint: tail -f
     env_file:
-      - .env
+      - env/.env
 
 volumes:
   score-getter-volume:
