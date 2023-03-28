@@ -1,51 +1,23 @@
+import { groupBy } from './deno-util/groupBy.js';
+import { mapValues } from './deno-util/mapValue.js';
+import { sortBy } from './deno-util/sortBy.js';
+import { sumOf } from './deno-util/sumOf.js';
 import { ScoreDto } from './ft-dto/ScoresDto.js';
-
-export interface ScoreMap {
-  [coalitionUserId: string]: number;
-}
 
 export interface ScoreRank {
   coalitionUserId: string;
   value: number;
 }
 
-export class ScoreConvertor {
-  private static DEFAULT_TARGET_SIZE = 5;
+const DEFAULT_TARGET_SIZE = 5;
 
-  public static toScoresRanks = (scores: ScoreDto[], targetSize: number = this.DEFAULT_TARGET_SIZE) => {
-    const scoresMap = this.toScoresMap(scores);
-    const sorted = Object.entries(scoresMap).sort((a, b) => b[1] - a[1]);
+export const toScoresRanks = (scores: ScoreDto[], targetSize: number = DEFAULT_TARGET_SIZE): ScoreRank[] => {
+  const scoresFiltered = scores.filter(({ coalitions_user_id }) => coalitions_user_id);
+  const scoresGrouped = groupBy(scoresFiltered, (it) => it.coalitions_user_id.toString());
+  const usersWithScores = mapValues(scoresGrouped, (dtos) => sumOf(dtos!, (it) => it.value));
+  const scoreRanks = Object.entries(usersWithScores).map(([coalitionUserId, value]) => ({ coalitionUserId, value }));
+  const sorted = sortBy(scoreRanks, (it) => -it.value);
 
-    const scoreRanks = sorted.map((curr) => {
-      const scoreRank: ScoreRank = {
-        coalitionUserId: curr[0],
-        value: curr[1],
-      };
-
-      return scoreRank;
-    });
-
-    const scoreRanksSliced = scoreRanks.slice(0, targetSize);
-    return scoreRanksSliced;
-  };
-
-  private static toScoresMap = (scores: ScoreDto[]) => {
-    const result: ScoreMap = {};
-
-    scores.reduce((acc, curr) => {
-      if (!curr.coalitions_user_id) {
-        return acc;
-      }
-
-      if (!acc[curr.coalitions_user_id.toString()]) {
-        acc[curr.coalitions_user_id.toString()] = 0;
-      }
-
-      acc[curr.coalitions_user_id.toString()] += curr.value;
-
-      return acc;
-    }, result);
-
-    return result;
-  };
-}
+  const scoreRanksSliced = sorted.slice(0, targetSize);
+  return scoreRanksSliced;
+};

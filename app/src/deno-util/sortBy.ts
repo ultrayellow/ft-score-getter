@@ -1,0 +1,32 @@
+export function sortBy<T>(array: readonly T[], selector: (el: T) => number): T[];
+export function sortBy<T>(array: readonly T[], selector: (el: T) => string): T[];
+export function sortBy<T>(array: readonly T[], selector: (el: T) => bigint): T[];
+export function sortBy<T>(array: readonly T[], selector: (el: T) => Date): T[];
+export function sortBy<T>(
+  array: readonly T[],
+  selector: ((el: T) => number) | ((el: T) => string) | ((el: T) => bigint) | ((el: T) => Date)
+): T[] {
+  const len = array.length;
+  const indexes = new Array<number>(len);
+  const selectors = new Array<ReturnType<typeof selector> | null>(len);
+
+  for (let i = 0; i < len; i++) {
+    indexes[i] = i;
+    const s = selector(array[i]);
+    selectors[i] = Number.isNaN(s) ? null : s;
+  }
+
+  indexes.sort((ai, bi) => {
+    const a = selectors[ai];
+    const b = selectors[bi];
+    if (a === null) return 1;
+    if (b === null) return -1;
+    return a > b ? 1 : a < b ? -1 : 0;
+  });
+
+  for (let i = 0; i < len; i++) {
+    (indexes as unknown as T[])[i] = array[indexes[i]];
+  }
+
+  return indexes as unknown as T[];
+}

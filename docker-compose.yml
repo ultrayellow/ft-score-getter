@@ -10,7 +10,11 @@ services:
       - type: volume
         source: score-getter-volume
         target: /app
-    entrypoint: sh /tmp/entry.sh
+      - type: volume
+        source: score-getter-output-volume
+        target: /var/log/score-getter
+    entrypoint: tail -f
+    # entrypoint: sh /tmp/entry.sh
     env_file:
       - .env
 
@@ -20,5 +24,13 @@ volumes:
     driver: local
     driver_opts:
       device: ./app
+      type: none
+      o: bind
+
+  score-getter-output-volume:
+    name: score-getter-output-volume
+    driver: local
+    driver_opts:
+      device: ./output
       type: none
       o: bind

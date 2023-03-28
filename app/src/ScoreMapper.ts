@@ -8,24 +8,24 @@ export interface UserScoreRank extends ScoreRank {
 }
 
 export class ScoreMapper {
-  public static mapWithUser = async (scoreRanks: ScoreRank[], requestController: RequestController) => {
+  public static mapWithUser = async (
+    scoreRanks: ScoreRank[],
+    requestController: RequestController
+  ): Promise<UserScoreRank[]> => {
     const uids = await this.requestUserIds(scoreRanks, requestController);
     const logins = await this.requestUserLogins(uids, requestController);
 
-    const result: UserScoreRank[] = [];
-
-    scoreRanks.forEach((scoreRank, index) => {
-      result[index] = {
-        userId: uids[index],
-        login: logins[index],
-        coalitionUserId: scoreRank.coalitionUserId,
-        value: scoreRank.value,
-      };
-    });
+    const result = scoreRanks.map(({ coalitionUserId, value }, index) => ({
+      userId: uids[index],
+      login: logins[index],
+      coalitionUserId,
+      value,
+    }));
 
     return result;
   };
 
+  // todo: 앞에 fetch 보셈
   private static requestUserIds = async (scoreRanks: ScoreRank[], requestController: RequestController) => {
     for (const scoreRank of scoreRanks) {
       requestController.addRequestPool(`coalitions_users/${scoreRank.coalitionUserId}`);

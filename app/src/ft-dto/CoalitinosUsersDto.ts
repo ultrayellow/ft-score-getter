@@ -1,4 +1,4 @@
-export interface CoalitionsUsersDto {
+export type CoalitionsUsersDto = {
   readonly id: number;
   readonly coalition_id: number;
   readonly user_id: number;
@@ -6,4 +6,4 @@ export interface CoalitionsUsersDto {
   readonly rank: number;
   readonly created_at: string;
   readonly updated_at: string;
-}
+};

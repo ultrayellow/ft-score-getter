@@ -22,11 +22,17 @@ export class RateLimiter {
   isLimitReaced = () => {
     const currTime = new Date().getTime();
 
-    if (this.hourlySendCount >= this.config.rateLimitPerHour && !this.isNewHour(currTime)) {
+    if (
+      this.hourlySendCount >= this.config.rateLimitPerHour &&
+      !this.isNewHour(currTime)
+    ) {
       return true;
     }
 
-    if (this.secondlySendCount >= this.config.rateLimitPerSec && !this.isNewSec(currTime)) {
+    if (
+      this.secondlySendCount >= this.config.rateLimitPerSec &&
+      !this.isNewSec(currTime)
+    ) {
       return true;
     }
 
@@ -59,7 +65,7 @@ export class RateLimiter {
 
   private isNewSec = (currTime: number) => {
     // todo
-    return this.secondlyLimitResetAt + 1000 < currTime;
+    return this.secondlyLimitResetAt + Util.SEC < currTime;
   };
 
   private refreshSecondlyLimit = () => {
