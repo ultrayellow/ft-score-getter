@@ -1,11 +1,24 @@
-// todo: zod
+import { z } from 'zod';
+
+export const Score = z.object({
+  id: z.string(),
+  coalition_id: z.coerce.string(),
+  scoreable_id: z.coerce.string(),
+  scoreable_type: z.string(),
+  coalitions_user_id: z.nullable(z.coerce.string()),
+  calculation_id: z.string(),
+  value: z.number(),
+  reason: z.string(),
+  created_at: z.coerce.date(),
+  updated_at: z.coerce.date(),
+});
+
 export type ScoreDto = {
   readonly id: number; // use z.coerce.string()
   readonly coalition_id: number;
   readonly scoreable_id: number;
   readonly scoreable_type: string;
-  // todo optional
-  readonly coalitions_user_id: number;
+  readonly coalitions_user_id: number | null;
   readonly calculation_id: number;
   readonly value: number;
   readonly reason: string;
