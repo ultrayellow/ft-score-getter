@@ -2,7 +2,7 @@ import { RequestController } from './api-requester/RequestController.js';
 import { assertsFulfilled } from './asserts.js';
 import { Coalition } from './coalitionType.js';
 import { getPrevMonth } from './dateUtil.js';
-import { Score, ScoreDto, scoreSchema } from './ft-dto/ScoresDto.js';
+import { Score, ScoreDto, scoreSchema } from './models/Score.js';
 
 // todo: config here
 const DEFAULT_PAGE_JUMP_SIZE = 10;
@@ -21,7 +21,12 @@ export const requestScores = async (
 
     const currDatas = await getScoresResponsesData(requestController);
 
-    scores.push(...scoreSchema.array().parse(currDatas));
+    try {
+      scores.push(...scoreSchema.array().parse(currDatas));
+    } catch (e) {
+      console.log(currDatas.find((curr: any) => curr.scoreable_type === null));
+      console.error('api has changed. patch score dto and schema.');
+    }
   }
 
   const targetMonthScores = scores.filter((score) =>

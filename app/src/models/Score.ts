@@ -1,23 +1,23 @@
 import { z } from 'zod';
 
 export const scoreSchema = z.object({
-  id: z.string(),
+  id: z.coerce.string(),
   coalition_id: z.coerce.string(),
-  scoreable_id: z.coerce.string(),
-  scoreable_type: z.string(),
+  // scoreable_id: z.nullable(z.coerce.string()),
+  // scoreable_type: z.nullable(z.string()),
   coalitions_user_id: z.nullable(z.coerce.string()),
-  calculation_id: z.string(),
+  // calculation_id: z.nullable(z.coerce.string()),
   value: z.number(),
-  reason: z.string(),
+  // reason: z.string(),
   created_at: z.coerce.date(),
   updated_at: z.coerce.date(),
 });
 
 export type ScoreDto = {
-  readonly id: number; // use z.coerce.string()
+  readonly id: number;
   readonly coalition_id: number;
-  readonly scoreable_id: number;
-  readonly scoreable_type: string;
+  readonly scoreable_id: number | null;
+  readonly scoreable_type: string | null;
   readonly coalitions_user_id: number | null;
   readonly calculation_id: number;
   readonly value: number;
@@ -27,4 +27,4 @@ export type ScoreDto = {
 };
 
 // todo: camel case
-export type Score = Readonly<z.infer<typeof scoreSchema>>
+export type Score = Readonly<z.infer<typeof scoreSchema>>;

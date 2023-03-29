@@ -2,7 +2,7 @@ import { assertGroupBySuccess, groupBy } from './deno-util/groupBy.js';
 import { mapValues } from './deno-util/mapValue.js';
 import { sortBy } from './deno-util/sortBy.js';
 import { sumOf } from './deno-util/sumOf.js';
-import { Score } from './ft-dto/ScoresDto.js';
+import { Score } from './models/Score.js';
 
 export interface ScoreRank {
   coalitionUserId: string;
@@ -29,8 +29,13 @@ export const toScoresRanks = (scores: Score[], targetSize: number = DEFAULT_TARG
 
 /**
  * @description coalition 자체에 부여된 점수가 아니라, 유저에게 부여된 점수라는 것을 단언합니다.
-*/
-function assertIsUserScore(scores: Score[]): asserts scores is (Omit<Score, 'coalitions_user_id'> & { coalitions_user_id: number })[] {
+ */
+function assertIsUserScore(scores: Score[]): asserts scores is (Omit<
+  Score,
+  'coalitions_user_id'
+> & {
+  coalitions_user_id: string;
+})[] {
   if (scores.find((score) => !score.coalitions_user_id)) {
     throw new Error("need to filter coalition's score.");
   }

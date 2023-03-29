@@ -1,6 +1,7 @@
 import { RequestController } from './api-requester/RequestController.js';
 import { assertsFulfilled } from './asserts.js';
-import { CoalitionsUsersDto } from './ft-dto/CoalitinosUsersDto.js';
+import { coalitionsUsersSchema } from './models/CoalitinosUsers.js';
+import { userSchema } from './models/User.js';
 import { ScoreRank } from './toScoreRanks.js';
 
 export interface UserScoreRank extends ScoreRank {
@@ -38,14 +39,12 @@ const requestUserIds = async (
   const responses = await requestController.awaitRequestPool();
   assertsFulfilled(responses);
 
-  const jsons = responses.map(
-    (res): Promise<CoalitionsUsersDto[]> => res.value.json(),
-  );
+  const jsons = responses.map((res) => res.value.json());
 
-  const coalitionsUsers = (await Promise.all(jsons)).flat();
-  const uids = coalitionsUsers.map((coalitionsUser) =>
-    coalitionsUser.user_id.toString(),
-  );
+  const coalitionsUsers = coalitionsUsersSchema
+    .array()
+    .parse(await Promise.all(jsons));
+  const uids = coalitionsUsers.map((coalitionsUser) => coalitionsUser.user_id);
 
   return uids;
 };
@@ -62,8 +61,7 @@ const requestUserLogins = async (
   assertsFulfilled(responses);
 
   const jsons = responses.map((res) => res.value.json());
-  // todo: has any type, expect UserDto
-  const users = (await Promise.all(jsons)).flat();
+  const users = userSchema.array().parse(await Promise.all(jsons));
   const logins = users.map((user) => user.login);
 
   return logins;
